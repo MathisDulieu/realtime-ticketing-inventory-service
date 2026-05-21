@@ -1,0 +1,31 @@
+# Server
+server:
+  port: 0
+
+# Spring
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    consumer:
+      auto-offset-reset: earliest
+
+# Logging
+logging:
+  level:
+    root: WARN
+    com.mathisdulieu.ticketing: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# CORS
+cors:
+  allowed-origins:
+    - "http://localhost:3000"
+
+# Inventory
+inventory:
+  kafka:
+    group-id: inventory_service_group_test
+    topic: json_reservation_created

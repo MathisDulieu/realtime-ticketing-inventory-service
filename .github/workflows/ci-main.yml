@@ -1,0 +1,61 @@
+name: CI — Main Branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-validate:
+    name: Build, Test & Final Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile project
+        run: mvn compile --no-transfer-progress
+
+      - name: Run tests + verify JaCoCo coverage
+        run: mvn verify --no-transfer-progress
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          APP_VERSION: ${{ github.ref_name }}-${{ github.sha }}
+          APP_ENVIRONMENT: test
+
+      - name: Verify JAR presence
+        run: |
+          JAR_FILE=$(find target -name "*.jar" -not -name "*sources*" | head -1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "❌ No JAR found after build"
+            exit 1
+          fi
+          echo "✅ JAR ready for deployment: $JAR_FILE"
+
+      - name: Upload JaCoCo report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report-main-${{ github.sha }}
+          path: target/site/jacoco/
+          retention-days: 30
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "## Main CI — Validation OK" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: main" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests: OK" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage: >= 80%" >> $GITHUB_STEP_SUMMARY
+          echo "- Ready for manual deployment on Railway" >> $GITHUB_STEP_SUMMARY

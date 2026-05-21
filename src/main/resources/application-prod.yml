@@ -1,0 +1,36 @@
+# Server
+server:
+  port: ${PORT}
+
+# Spring
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+# Logging
+logging:
+  level:
+    root: WARN
+    com.mathisdulieu.ticketing: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%thread] %-5level %logger{36} - %msg%n"
+
+# Swagger
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+# CORS
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+# Inventory
+inventory:
+  kafka:
+    group-id: inventory_service_group
+    topic: json_reservation_created
+  mongodb:
+    uri: ${MONGODB_URI}
+    database-name: ${MONGODB_DATABASE_NAME}
