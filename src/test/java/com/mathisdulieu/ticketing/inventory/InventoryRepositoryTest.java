@@ -1,5 +1,6 @@
 package com.mathisdulieu.ticketing.inventory;
 
+import com.mathisdulieu.ticketing.library.test.mongo.config.MongoTestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataMongoTest
 @ActiveProfiles("test")
-@Import(RealtimeTicketingInventoryServiceConfigurationTests.class)
+@Import({
+    RealtimeTicketingInventoryServiceConfigurationTests.class,
+    MongoTestConfig.class
+})
 class InventoryRepositoryTest {
 
     @Autowired

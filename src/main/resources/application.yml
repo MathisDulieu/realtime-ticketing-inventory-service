@@ -39,3 +39,8 @@ spring:
 
 server:
   shutdown: graceful
+
+inventory:
+  kafka:
+    group-id: inventory_service_group
+    topic: json_realtime_reservation_created

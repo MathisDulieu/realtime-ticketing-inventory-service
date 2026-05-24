@@ -1,5 +1,6 @@
 package com.mathisdulieu.ticketing.inventory;
 
+import com.mathisdulieu.ticketing.library.core.dto.InventoryEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +30,7 @@ class InventoryEventProducerTest {
         inventoryEventProducer.sendReservationConfirmedEvent(inventoryEvent);
 
         // Assert
-        verify(kafkaTemplate).send("json_reservation_confirmed", inventoryEvent);
+        verify(kafkaTemplate).send("json_realtime_reservation_confirmed", inventoryEvent);
     }
 
     @Test
@@ -43,7 +44,7 @@ class InventoryEventProducerTest {
         inventoryEventProducer.sendReservationFailedEvent(inventoryEvent);
 
         // Assert
-        verify(kafkaTemplate).send("json_reservation_failed", inventoryEvent);
+        verify(kafkaTemplate).send("json_realtime_reservation_failed", inventoryEvent);
     }
 
     @Test
@@ -57,7 +58,7 @@ class InventoryEventProducerTest {
         inventoryEventProducer.sendInventoryUpdatedEvent(inventoryEvent);
 
         // Assert
-        verify(kafkaTemplate).send("json_inventory_updated", inventoryEvent);
+        verify(kafkaTemplate).send("json_realtime_inventory_updated", inventoryEvent);
     }
 
     @Test
@@ -71,7 +72,7 @@ class InventoryEventProducerTest {
         inventoryEventProducer.sendInventoryLowStockEvent(inventoryEvent);
 
         // Assert
-        verify(kafkaTemplate).send("json_inventory_low_stock", inventoryEvent);
+        verify(kafkaTemplate).send("json_realtime_inventory_low_stock", inventoryEvent);
     }
 
     @Test
@@ -85,7 +86,7 @@ class InventoryEventProducerTest {
         inventoryEventProducer.sendInventorySoldOutEvent(inventoryEvent);
 
         // Assert
-        verify(kafkaTemplate).send("json_inventory_sold_out", inventoryEvent);
+        verify(kafkaTemplate).send("json_realtime_inventory_sold_out", inventoryEvent);
     }
 
 }

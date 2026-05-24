@@ -24,13 +24,10 @@ springdoc:
 
 # CORS
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  allowed-origin: ${CORS_ALLOWED_ORIGIN}
 
 # Inventory
 inventory:
-  kafka:
-    group-id: inventory_service_group
-    topic: json_reservation_created
   mongodb:
     uri: ${MONGODB_URI}
     database-name: ${MONGODB_DATABASE_NAME}

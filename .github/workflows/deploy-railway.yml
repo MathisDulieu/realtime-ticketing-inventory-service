@@ -40,6 +40,26 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Configure Maven settings
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>nexus-releases</id>
+                <username>${{ secrets.NEXUS_USERNAME }}</username>
+                <password>${{ secrets.NEXUS_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>nexus-snapshots</id>
+                <username>${{ secrets.NEXUS_USERNAME }}</username>
+                <password>${{ secrets.NEXUS_PASSWORD }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
       - name: Run tests before deployment
         run: mvn verify --no-transfer-progress
         env:
@@ -58,12 +78,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
+        run: npm install -g @railway/cli
 
       - name: Deploy via Railway CLI
         run: railway up --service ${{ secrets.RAILWAY_SERVICE_NAME }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
       - name: Deployment summary
         run: |
