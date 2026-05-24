@@ -1,5 +1,9 @@
 package com.mathisdulieu.ticketing.inventory;
 
+import com.mathisdulieu.ticketing.library.core.dto.InventoryEvent;
+import com.mathisdulieu.ticketing.library.core.dto.ReservationCreatedEvent;
+import com.mathisdulieu.ticketing.library.test.kafka.consumer.GenericTestKafkaConsumer;
+import com.mathisdulieu.ticketing.library.test.mongo.config.MongoTestConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +21,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -27,18 +28,19 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @EmbeddedKafka(partitions = 1,
     topics = {
-        "json_reservation_created",
-        "json_reservation_confirmed",
-        "json_reservation_failed",
-        "json_inventory_updated",
-        "json_inventory_low_stock",
-        "json_inventory_sold_out"
+        "json_realtime_reservation_created",
+        "json_realtime_reservation_confirmed",
+        "json_realtime_reservation_failed",
+        "json_realtime_inventory_updated",
+        "json_realtime_inventory_low_stock",
+        "json_realtime_inventory_sold_out"
     }
 )
 @ActiveProfiles("test")
 @Import({
     RealtimeTicketingInventoryServiceConfigurationTests.class,
-    RealtimeTicketingInventoryServiceIntegrationTest.TestKafkaConsumer.class
+    RealtimeTicketingInventoryServiceIntegrationTest.TestKafkaConsumer.class,
+    MongoTestConfig.class
 })
 public class RealtimeTicketingInventoryServiceIntegrationTest {
 
@@ -57,9 +59,9 @@ public class RealtimeTicketingInventoryServiceIntegrationTest {
     @BeforeEach
     void setup() {
         mongoTemplate.dropCollection("inventories");
-        testKafkaConsumer.confirmedRecords.clear();
-        testKafkaConsumer.failedRecords.clear();
-        testKafkaConsumer.updatedRecords.clear();
+        testKafkaConsumer.consumer.clearRecordsFromTopic("json_realtime_reservation_confirmed");
+        testKafkaConsumer.consumer.clearRecordsFromTopic("json_realtime_reservation_failed");
+        testKafkaConsumer.consumer.clearRecordsFromTopic("json_realtime_inventory_updated");
     }
 
     @Test
@@ -130,7 +132,7 @@ public class RealtimeTicketingInventoryServiceIntegrationTest {
             .build();
 
         // Act
-        kafkaTemplate.send("json_reservation_created", reservationCreatedEvent);
+        kafkaTemplate.send("json_realtime_reservation_created", reservationCreatedEvent);
 
         // Assert
         Inventory expectedInventory = Inventory.builder()
@@ -140,20 +142,17 @@ public class RealtimeTicketingInventoryServiceIntegrationTest {
             .availableTickets(14)
             .build();
 
-        ConsumerRecord<String, InventoryEvent> confirmedRecord = testKafkaConsumer.confirmedRecords.poll(5, TimeUnit.SECONDS);
-        assertThat(confirmedRecord).isNotNull();
+        ConsumerRecord<String, InventoryEvent> confirmedRecord = testKafkaConsumer.consumer.pollRecord("json_realtime_reservation_confirmed", 5);
         assertThat(confirmedRecord.value().eventId()).isEqualTo("event-id");
 
-        ConsumerRecord<String, InventoryEvent> updatedRecord = testKafkaConsumer.updatedRecords.poll(5, TimeUnit.SECONDS);
-        assertThat(updatedRecord).isNotNull();
+        ConsumerRecord<String, InventoryEvent> updatedRecord = testKafkaConsumer.consumer.pollRecord("json_realtime_inventory_updated", 5);
         assertThat(updatedRecord.value().eventId()).isEqualTo("event-id");
 
         List<Inventory> updatedInventories = mongoTemplate.findAll(Inventory.class);
         assertThat(updatedInventories).hasSize(1);
         assertThat(updatedInventories.getFirst()).isEqualTo(expectedInventory);
 
-        ConsumerRecord<String, InventoryEvent> failedRecord = testKafkaConsumer.failedRecords.poll(5, TimeUnit.SECONDS);
-        assertThat(failedRecord).isNull();
+        testKafkaConsumer.consumer.assertNoRecordReceived("json_realtime_reservation_failed", 3);
     }
 
     @Test
@@ -173,51 +172,32 @@ public class RealtimeTicketingInventoryServiceIntegrationTest {
             .build();
 
         // Act
-        kafkaTemplate.send("json_reservation_created", reservationCreatedEvent);
+        kafkaTemplate.send("json_realtime_reservation_created", reservationCreatedEvent);
 
         // Assert
-        ConsumerRecord<String, InventoryEvent> failedRecord = testKafkaConsumer.failedRecords.poll(5, TimeUnit.SECONDS);
+        ConsumerRecord<String, InventoryEvent> failedRecord = testKafkaConsumer.consumer.pollRecord("json_realtime_reservation_failed", 5);
         assertThat(failedRecord).isNotNull();
         assertThat(failedRecord.value().eventId()).isEqualTo("event-id");
 
-        ConsumerRecord<String, InventoryEvent> confirmedRecord = testKafkaConsumer.confirmedRecords.poll(5, TimeUnit.SECONDS);
-        assertThat(confirmedRecord).isNull();
-
-        ConsumerRecord<String, InventoryEvent> updatedRecord = testKafkaConsumer.updatedRecords.poll(5, TimeUnit.SECONDS);
-        assertThat(updatedRecord).isNull();
+        testKafkaConsumer.consumer.assertNoRecordReceived("json_realtime_reservation_confirmed", 3);
+        testKafkaConsumer.consumer.assertNoRecordReceived("json_realtime_inventory_updated", 3);
     }
 
     @TestComponent
     static class TestKafkaConsumer {
-        final BlockingQueue<ConsumerRecord<String, InventoryEvent>> confirmedRecords = new LinkedBlockingQueue<>();
-        final BlockingQueue<ConsumerRecord<String, InventoryEvent>> failedRecords = new LinkedBlockingQueue<>();
-        final BlockingQueue<ConsumerRecord<String, InventoryEvent>> updatedRecords = new LinkedBlockingQueue<>();
+        final GenericTestKafkaConsumer<InventoryEvent> consumer = new GenericTestKafkaConsumer<>();
 
         @KafkaListener(
-            topics = "json_reservation_confirmed",
-            groupId = "test-group-confirmed",
+            topics = {
+                "json_realtime_reservation_confirmed",
+                "json_realtime_reservation_failed",
+                "json_realtime_inventory_updated"
+            },
+            groupId = "test-group",
             containerFactory = "inventoryEventKafkaListenerContainerFactory"
         )
-        public void consumeConfirmed(ConsumerRecord<String, InventoryEvent> record) {
-            confirmedRecords.add(record);
-        }
-
-        @KafkaListener(
-            topics = "json_reservation_failed",
-            groupId = "test-group-failed",
-            containerFactory = "inventoryEventKafkaListenerContainerFactory"
-        )
-        public void consumeFailed(ConsumerRecord<String, InventoryEvent> record) {
-            failedRecords.add(record);
-        }
-
-        @KafkaListener(
-            topics = "json_inventory_updated",
-            groupId = "test-group-updated",
-            containerFactory = "inventoryEventKafkaListenerContainerFactory"
-        )
-        public void consumeUpdated(ConsumerRecord<String, InventoryEvent> record) {
-            updatedRecords.add(record);
+        public void consume(ConsumerRecord<String, InventoryEvent> record) {
+            consumer.records.add(record);
         }
     }
 }

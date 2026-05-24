@@ -21,11 +21,15 @@ logging:
 
 # CORS
 cors:
-  allowed-origins:
-    - "http://localhost:3000"
+  allowed-origin: http://localhost:3000
 
 # Inventory
 inventory:
   kafka:
     group-id: inventory_service_group_test
-    topic: json_reservation_created
+    topic: json_realtime_reservation_created
+
+library:
+  test:
+    mongo:
+      database-name: inventory-service-test

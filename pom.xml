@@ -19,6 +19,9 @@
 
     <properties>
         <java.version>21</java.version>
+
+        <realtime-ticketing-library.version>1.0.1</realtime-ticketing-library.version>
+
         <jacoco.version>0.8.12</jacoco.version>
         <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
         <springdoc-openapi-starter-webmvc-ui.version>2.8.8</springdoc-openapi-starter-webmvc-ui.version>
@@ -26,6 +29,13 @@
     </properties>
 
     <dependencies>
+        <!-- Realtime Library -->
+        <dependency>
+            <groupId>com.mathisdulieu.ticketing</groupId>
+            <artifactId>library-core</artifactId>
+            <version>${realtime-ticketing-library.version}</version>
+        </dependency>
+
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -89,7 +99,41 @@
             <version>${mongo-java-server.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Realtime Library Test -->
+        <dependency>
+            <groupId>com.mathisdulieu.ticketing</groupId>
+            <artifactId>library-test-kafka</artifactId>
+            <version>${realtime-ticketing-library.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mathisdulieu.ticketing</groupId>
+            <artifactId>library-test-mongo</artifactId>
+            <version>${realtime-ticketing-library.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>nexus-releases</id>
+            <url>https://realtime-ticketing-nexus-production.up.railway.app/repository/maven-releases/</url>
+        </repository>
+    </repositories>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+
+            <repositories>
+                <repository>
+                    <id>nexus-local</id>
+                    <url>http://localhost:8092/repository/maven-releases/</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>

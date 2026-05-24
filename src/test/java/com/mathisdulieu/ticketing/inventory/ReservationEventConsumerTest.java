@@ -1,5 +1,6 @@
 package com.mathisdulieu.ticketing.inventory;
 
+import com.mathisdulieu.ticketing.library.core.dto.ReservationCreatedEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
