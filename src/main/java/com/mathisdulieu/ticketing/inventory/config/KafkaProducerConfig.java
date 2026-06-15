@@ -1,6 +1,6 @@
 package com.mathisdulieu.ticketing.inventory.config;
 
-import com.mathisdulieu.ticketing.library.core.dto.InventoryEvent;
+import com.mathisdulieu.ticketing.library.core.dto.inventory.InventoryEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,6 +1,6 @@
 package com.mathisdulieu.ticketing.inventory;
 
-import com.mathisdulieu.ticketing.library.core.dto.ReservationCreatedEvent;
+import com.mathisdulieu.ticketing.library.core.dto.reservation.ReservationCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

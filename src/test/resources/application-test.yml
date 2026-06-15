@@ -33,3 +33,11 @@ library:
   test:
     mongo:
       database-name: inventory-service-test
+    kafka:
+      topics:
+        - json_realtime_reservation_created
+        - json_realtime_reservation_confirmed
+        - json_realtime_reservation_failed
+        - json_realtime_inventory_updated
+        - json_realtime_inventory_low_stock
+        - json_realtime_inventory_sold_out

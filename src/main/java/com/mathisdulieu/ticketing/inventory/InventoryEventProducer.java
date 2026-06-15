@@ -1,6 +1,6 @@
 package com.mathisdulieu.ticketing.inventory;
 
-import com.mathisdulieu.ticketing.library.core.dto.InventoryEvent;
+import com.mathisdulieu.ticketing.library.core.dto.inventory.InventoryEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

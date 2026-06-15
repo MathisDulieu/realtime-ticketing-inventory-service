@@ -20,7 +20,7 @@
     <properties>
         <java.version>21</java.version>
 
-        <realtime-ticketing-library.version>1.0.1</realtime-ticketing-library.version>
+        <realtime-ticketing-library.version>1.1.5</realtime-ticketing-library.version>
 
         <jacoco.version>0.8.12</jacoco.version>
         <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>

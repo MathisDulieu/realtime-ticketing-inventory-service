@@ -1,7 +1,7 @@
 package com.mathisdulieu.ticketing.inventory;
 
-import com.mathisdulieu.ticketing.library.core.dto.InventoryEvent;
-import com.mathisdulieu.ticketing.library.core.dto.ReservationCreatedEvent;
+import com.mathisdulieu.ticketing.library.core.dto.inventory.InventoryEvent;
+import com.mathisdulieu.ticketing.library.core.dto.reservation.ReservationCreatedEvent;
 import com.mathisdulieu.ticketing.library.core.utils.UuidService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

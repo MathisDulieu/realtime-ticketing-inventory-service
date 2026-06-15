@@ -1,4 +1,4 @@
-name: Deploy — Railway (Manual)
+name: Deploy Railway
 
 on:
   workflow_dispatch:
@@ -81,7 +81,12 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy via Railway CLI
-        run: railway up --service ${{ secrets.RAILWAY_SERVICE_NAME }} --detach
+        run: |
+          DEPLOY_DATE=$(TZ=Europe/Paris date '+%d/%m/%Y %H:%M:%S')
+          railway up \
+            --service ${{ secrets.RAILWAY_SERVICE_NAME }} \
+            --detach \
+            --message "Deploy ${DEPLOY_DATE} Europe/Paris"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
